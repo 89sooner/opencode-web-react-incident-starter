@@ -2,6 +2,8 @@
 
 이 문서는 `opencode-web-react-incident-starter`를 로컬에서 순차적으로 실행하는 가장 빠른 절차를 정리한다.
 
+처음 앱을 쓰는 사용자는 실행 전에 [USER_MANUAL](/home/roqkf/opencode-web-react-incident-starter/docs/USER_MANUAL.md)부터 읽는 편이 좋다.
+
 ## 1. 사전 준비
 
 로컬에 아래가 설치되어 있어야 한다.
