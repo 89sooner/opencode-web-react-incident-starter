@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "mock:opencode": "node src/fake-opencode.js",
     "check": "node --check src/server.js && node --check src/schema.js",
     "web:dev": "npm --prefix web run dev",
     "web:build": "npm --prefix web run build",
