@@ -62,6 +62,10 @@ export const incidentTriageFormat = {
         type: "array",
         items: { type: "string" },
         description: "Important unanswered questions."
+      },
+      schema_version: {
+        type: "string",
+        description: "Optional schema version for future compatibility."
       }
     },
     required: [

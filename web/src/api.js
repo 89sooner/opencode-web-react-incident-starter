@@ -42,10 +42,10 @@ export const api = {
   getHealth() {
     return request("/health")
   },
-  createSession(title) {
+  createSession(payload) {
     return request("/api/session", {
       method: "POST",
-      body: title ? { title } : {}
+      body: payload || {}
     })
   },
   getMessages(sessionId) {

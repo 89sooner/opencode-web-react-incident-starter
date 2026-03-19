@@ -18,6 +18,7 @@ const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:5173"
 const defaultAgent = process.env.DEFAULT_AGENT || "plan"
 const defaultProviderId = process.env.DEFAULT_PROVIDER_ID || "corp"
 const defaultModelId = process.env.DEFAULT_MODEL_ID || "ops-coder"
+const requiredStructuredFields = incidentTriageFormat.schema.required || []
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const webDistPath = path.join(__dirname, "..", "web", "dist")
@@ -90,17 +91,55 @@ function extractAssistantText(message) {
 }
 
 function normalizeMessage(message) {
+  const structuredOutput = message?.info?.structured_output || null
   return {
     id: message?.info?.id || message?.id || null,
     info: message?.info || null,
     parts: message?.parts || [],
     assistantText: extractAssistantText(message),
-    structuredOutput: message?.info?.structured_output || null
+    structuredOutput,
+    structuredOutputValid: isValidStructuredOutput(structuredOutput)
   }
 }
 
+function inferSessionTitle(input) {
+  const title = typeof input?.title === "string" ? input.title.trim() : ""
+  if (title) return title.slice(0, 200)
+
+  const preview = typeof input?.promptPreview === "string" ? input.promptPreview : ""
+  const compactPreview = preview.replace(/\s+/g, " ").trim()
+  if (!compactPreview) return "incident triage"
+  return compactPreview.slice(0, 200)
+}
+
+function isValidStructuredOutput(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false
+
+  const requiredTypes = {
+    summary: "string",
+    severity: "string",
+    confidence: "number",
+    user_impact: "string",
+    blast_radius: "array",
+    evidence: "array",
+    hypotheses: "array",
+    recommended_actions: "array",
+    escalate_now: "boolean",
+    open_questions: "array"
+  }
+
+  return requiredStructuredFields.every((field) => {
+    if (!(field in value)) return false
+    const actual = value[field]
+    const expected = requiredTypes[field]
+    if (expected === "array") return Array.isArray(actual)
+    return typeof actual === expected
+  })
+}
+
 const createSessionSchema = z.object({
-  title: z.string().min(1).max(200).optional()
+  title: z.string().min(1).max(200).optional(),
+  promptPreview: z.string().max(1000).optional()
 })
 
 const promptSchema = z.object({
@@ -130,8 +169,13 @@ app.get("/health", async (_req, res) => {
 
 app.post("/api/session", async (req, res) => {
   try {
-    const body = createSessionSchema.parse(req.body || {})
-    const session = await opencodeRequest("/session", { method: "POST", body })
+    const input = createSessionSchema.parse(req.body || {})
+    const session = await opencodeRequest("/session", {
+      method: "POST",
+      body: {
+        title: inferSessionTitle(input)
+      }
+    })
     res.status(201).json(session)
   } catch (error) {
     res.status(error.status || 400).json({ error: error.message, details: error.data || null })

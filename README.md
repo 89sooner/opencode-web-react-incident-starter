@@ -48,6 +48,7 @@ opencode-web-react-incident-starter/
 - 기본 agent: `plan`
 - `edit`: `deny`
 - `bash`: 기본 `deny`, 읽기성 명령만 `allow`
+- 읽기성 bash allowlist 예시: `git status*`, `git diff*`, `grep *`
 - `skill`: `incident-triage`만 `allow`
 - `share`: `disabled`
 
@@ -102,10 +103,15 @@ npm run start
 ## 6. 프론트 기능
 
 - 세션 생성
+- 제목 비입력 시 BFF 기본 세션 제목 생성
 - incident prompt 전송
+- sync / async 전송 모드 선택
+- structured output on/off 선택
+- agent / provider / model / system override 입력
 - global SSE 구독
-- pending permission 모달/버튼
+- pending permission 목록 + 상세 + 모달
 - structured triage result 카드
+- structured output invalid 시 fallback UI
 - raw messages 패널
 - event log 패널
 
